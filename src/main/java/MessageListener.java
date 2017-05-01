@@ -12,6 +12,20 @@ import net.dv8tion.jda.core.requests.Route;
 import javax.security.auth.login.LoginException;
 
 public class MessageListener extends ListenerAdapter {
+    MessageParser messageparser;
+
+    /** Constructor. Mostly just need the message parser at the moment
+     *
+     */
+    public MessageListener(){
+        this.messageparser = new MessageParser();
+    }
+
+    /** * Main. Starts the program. Mostly just gets token, logs in, and sets
+     * the event listener as the MessageListener. After that it's handed off
+     * @param   args  just args for the program
+     * @returns none
+     */
     public static void main(String[] args)
         throws LoginException, RateLimitedException, InterruptedException{
 
@@ -34,22 +48,35 @@ public class MessageListener extends ListenerAdapter {
         }
     }
 
+    /**
+     * Trigger for the rest of the program.
+     * @param   event a MessageReceievedEvent that's triggered on the bot
+     *                getting a new message
+     * @returns none
+     */
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
-        if (event.isFromType(ChannelType.PRIVATE)){
-            System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
-                    event.getMessage().getContent());
-        }else{
-            MessageChannel channel = event.getChannel();
-            System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
-                    event.getTextChannel().getName(), event.getMember().getEffectiveName(),
-                    event.getMessage().getContent());
-            channel.sendMessage("Testing").queue();
+        // TODO actions with parsed_message. At the moment we got it here
+        // but we've got to go from there.
+        ParsedMessage parsed_message = this.messageparser.parseMessage(event.getMessage());
+        if (parsed_message != null){
+            if (event.isFromType(ChannelType.PRIVATE)){
+                System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
+                        event.getMessage().getContent());
+            }else{
+                System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
+                        event.getTextChannel().getName(), event.getMember().getEffectiveName(),
+                        event.getMessage().getContent());
+            }
         }
     }
-
+    /**
+     * Returns the token for this program that's stored in
+     * environment variables. If variable is not set, will exit.
+     *
+     * @return  string token from env.
+     */
     public static String getToken(){
-        // Stored as an environment variable
         String token = System.getenv("token");
         if (token == null){
             System.err.println("Token environment variable not set");
