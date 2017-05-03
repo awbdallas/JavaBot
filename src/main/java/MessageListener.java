@@ -1,13 +1,10 @@
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Channel;
 import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import net.dv8tion.jda.core.requests.Route;
 
 import javax.security.auth.login.LoginException;
 
@@ -56,17 +53,14 @@ public class MessageListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
-        // TODO actions with parsed_message. At the moment we got it here
-        // but we've got to go from there.
         ParsedMessage parsed_message = this.messageparser.parseMessage(event.getMessage());
         if (parsed_message != null){
-            if (event.isFromType(ChannelType.PRIVATE)){
-                System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
-                        event.getMessage().getContent());
-            }else{
+            if (!event.isFromType(ChannelType.PRIVATE)){
                 System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
                         event.getTextChannel().getName(), event.getMember().getEffectiveName(),
                         event.getMessage().getContent());
+                String response = MessageCommands.runCommand(parsed_message);
+                event.getChannel().sendMessage(response);
             }
         }
     }
@@ -85,5 +79,3 @@ public class MessageListener extends ListenerAdapter {
         return token;
     }
 }
-
-

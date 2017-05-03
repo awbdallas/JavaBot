@@ -1,6 +1,3 @@
-/**
- * Created by awbriggs on 5/1/17.
- */
 public class ParsedMessage {
     private String command;
     private String[] arguments;
