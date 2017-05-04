@@ -1,21 +1,27 @@
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MessageListener extends ListenerAdapter {
-    MessageParser messageparser;
+    MessageCommandParser messageparser;
 
     /** Constructor. Mostly just need the message parser at the moment
      *
      */
     public MessageListener(){
-        this.messageparser = new MessageParser();
+        this.messageparser = new MessageCommandParser();
     }
 
     /** * Main. Starts the program. Mostly just gets token, logs in, and sets
@@ -53,14 +59,60 @@ public class MessageListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
-        ParsedMessage parsed_message = this.messageparser.parseMessage(event.getMessage());
-        if (parsed_message != null){
-            if (!event.isFromType(ChannelType.PRIVATE)){
+        ParsedCommandMessage parsed_command = this.messageparser.parseMessage(event.getMessage());
+        if (parsed_command != null){
+            if (event.isFromType(ChannelType.TEXT)){
                 System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
                         event.getTextChannel().getName(), event.getMember().getEffectiveName(),
                         event.getMessage().getContent());
-                String response = MessageCommands.runCommand(parsed_message);
-                event.getChannel().sendMessage(response);
+                String response = MessageCommands.runCommand(parsed_command);
+                event.getChannel().sendMessage(response).queue();
+            }
+        }else{
+            // If it's not a command, there's still a few things it can be
+            // We might call this keywords. Unsure at the moment
+            String message = event.getMessage().getContent();
+            if (message.contains("www.reddit")){
+                String response = message.replace("www", "np");
+                event.getChannel().sendMessage(response).queue();
+            }else{
+                Pattern pattern = Pattern.compile(":(.*?):");
+                Matcher matcher = pattern.matcher(message);
+                Boolean found = false;
+                String what_was_found = "";
+
+                while (matcher.find()) {
+                    // Every other group is what we want
+                    what_was_found = matcher.group(1);
+                    found = true;
+                }
+                if (found){
+                    String[] possible_extensions = new String[]{".gif",".png",".jpg"};
+                    Boolean image_found = false;
+                    File file = null;
+
+                    for(String extension : possible_extensions){
+                        // Testing for the file
+                        ClassLoader classLoader = getClass().getClassLoader();
+                        try{
+                            file = new File(classLoader.getResource("emojis/" +what_was_found + extension).getFile());
+                        }catch(NullPointerException e){
+                           continue;
+                        }
+                        image_found = true;
+
+                    }
+                    if (image_found){
+                        MessageBuilder messageBuilder = new MessageBuilder();
+                        messageBuilder.append(what_was_found);
+                        try {
+                            event.getChannel().sendFile(file, messageBuilder.build()).queue();
+                        }catch (IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
             }
         }
     }

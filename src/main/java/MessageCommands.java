@@ -8,12 +8,16 @@ public class MessageCommands {
      *                and arguments
      * @return String with what should be the response
      */
-    public static String runCommand(ParsedMessage command){
+    public static String runCommand(ParsedCommandMessage command){
+        String response;
         switch(command.getCommand()){
             case "ping":
-                return Ping.run();
+                response = Ping.run();
+                break;
+            default:
+                response = "Command not found";
         }
-        return "Command Not Found";
+        return response;
     }
 }
 

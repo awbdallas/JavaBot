@@ -2,10 +2,10 @@ import net.dv8tion.jda.core.entities.Message;
 
 import java.util.Arrays;
 
-public class MessageParser {
+public class MessageCommandParser {
     private String context;
 
-    MessageParser() {
+    MessageCommandParser() {
         this.context = getContextVariable();
     }
 
@@ -14,7 +14,7 @@ public class MessageParser {
      * @param   message which is a typeof Message
      * @returns array with 0 being command and 1 - end being arguments
      */
-    public ParsedMessage parseMessage(Message message){
+    public ParsedCommandMessage parseMessage(Message message){
         String holding = message.getStrippedContent();
         String[] split_message;
 
@@ -26,9 +26,9 @@ public class MessageParser {
         split_message = holding.split(" ");
 
         if (split_message.length == 1){
-            return new ParsedMessage(split_message[0]);
+            return new ParsedCommandMessage(split_message[0]);
         }else{
-            return new ParsedMessage(split_message[0],
+            return new ParsedCommandMessage(split_message[0],
                     Arrays.copyOfRange(split_message, 1, split_message.length ));
         }
     }

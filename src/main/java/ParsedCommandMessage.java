@@ -1,15 +1,15 @@
-public class ParsedMessage {
+public class ParsedCommandMessage {
     private String command;
     private String[] arguments;
 
-    ParsedMessage(String command){
+    ParsedCommandMessage(String command){
         this.command = command;
         // Trying to avoid null problems, but still making sure
         // No arguments
         this.arguments = new String[]{"None"};
     }
 
-    ParsedMessage(String command, String[] arguments) {
+    ParsedCommandMessage(String command, String[] arguments) {
         this.command = command;
         this.arguments = arguments;
     }
