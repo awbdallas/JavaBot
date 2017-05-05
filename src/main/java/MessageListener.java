@@ -3,7 +3,6 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -15,7 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageListener extends ListenerAdapter {
-    MessageCommandParser messageparser;
+    private MessageCommandParser messageparser;
 
     /** Constructor. Mostly just need the message parser at the moment
      *
@@ -61,10 +60,11 @@ public class MessageListener extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event){
         ParsedCommandMessage parsed_command = this.messageparser.parseMessage(event.getMessage());
         if (parsed_command != null){
-            if (event.isFromType(ChannelType.TEXT)){
+            if (!event.isFromType(ChannelType.PRIVATE)){
                 System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
                         event.getTextChannel().getName(), event.getMember().getEffectiveName(),
                         event.getMessage().getContent());
+                parsed_command.setEvent(event);
                 String response = MessageCommands.runCommand(parsed_command);
                 event.getChannel().sendMessage(response).queue();
             }
@@ -116,6 +116,7 @@ public class MessageListener extends ListenerAdapter {
             }
         }
     }
+
     /**
      * Returns the token for this program that's stored in
      * environment variables. If variable is not set, will exit.

@@ -14,6 +14,11 @@ public class MessageCommands {
             case "ping":
                 response = Ping.run();
                 break;
+            case "xkcd":
+                // Can't get around not making the object
+                Xkcd xkcd = new Xkcd();
+                response = xkcd.run(command);
+                break;
             default:
                 response = "Command not found";
         }
