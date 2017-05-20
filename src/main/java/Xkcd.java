@@ -13,65 +13,67 @@ import java.net.URL;
  * Created to work with XKCD stuff
  */
 public class Xkcd {
-    private int highest_number;
-
-    Xkcd(){
-        this.highest_number = getInfo();
-    }
-
-    /*
-     *
-     *
+    /**
+     * run is called by the thing that runs all the commands that's called by the
+     * on message recieved
+     * @param message which is a parsed command so we know it's xkcd
+     * @return string that will be the alt_text of the image or an error message
      */
     public String run(ParsedCommandMessage message){
-        if (message.getArguments()[0] == "None"){
-            File holding = getComic(this.highest_number);
-            sendFile(holding, message.getEvent().getChannel());
-        }else{
-            // Only accepting numbers at the moment. Keywords would be a pain
-            try{
-                int request_comic_number = Integer.parseInt(message.getArguments()[0]);
-                if (request_comic_number > this.highest_number || request_comic_number <= 0){
-                    return "Invalid number";
-                }
-                File file = checkForFile(message.getArguments()[0]);
-                if (file != null){
-                    sendFile(file, message.getEvent().getChannel());
-                }else{
-                    file = getComic(request_comic_number);
-                }
-
-
-            }catch(NumberFormatException e){
-                return "Argument malformed";
-            }
-
+        XKCD_image holding;
+        if (message.getArguments()[0].equals("None")){
+            holding = getComic(false);
+            sendFile(holding.get_image(), message.getEvent().getChannel(),
+                    holding.get_title());
+            return holding.get_alt_text();
+        }else if(message.getArguments()[0].toLowerCase().equals("random")){
+            holding = getComic(true);
+            sendFile(holding.get_image(), message.getEvent().getChannel(),
+                    holding.get_title());
+            return holding.get_alt_text();
         }
-        return "Probably was an error. vOv";
+        return "I mean, probably was an error somewhere";
     }
 
-    private File getComic(int comic_number){
+    /**
+     * Get comic which includes opening the request
+     * @param random so we know if it's a random request or not
+     * @return will return an XKCD_image which is more or less acting like a
+     * struct containing all the info
+     */
+    private XKCD_image getComic(Boolean random){
+        String image_link = null;
+        String alt_text = null;
+        String title = null;
+        Document doc;
+
         try {
-            Document doc = Jsoup.connect("https://www.xkcd.com").get();
+            if (random){
+                doc = Jsoup.connect("https://c.xkcd.com/random/comic/").get();
+            }else{
+                doc = Jsoup.connect("https://www.xkcd.com").get();
+            }
             Elements picture = doc.select("img[src$=.png]");
-            String image_link = null;
+            ClassLoader classLoader = getClass().getClassLoader();
             for (Element element : picture){
                 if (element.attr("abs:src").contains("comics")){
                     image_link = element.attr("abs:src");
+                    alt_text = element.attr("title");
+                    title = element.attr("alt");
                 }
             }
             if (image_link != null){
                 URL url = new URL(image_link);
                 InputStream in = new BufferedInputStream(url.openStream());
-                OutputStream out = new BufferedOutputStream(new FileOutputStream("test.png"));
-
+                OutputStream out = new BufferedOutputStream(
+                        new FileOutputStream("/tmp/xkcd.png"));
                 for (int i; (i = in.read()) != -1; ){
                     out.write(i);
                 }
                 in.close();
                 out.close();
 
-                return new File("test.png");
+                return new XKCD_image(new File("/tmp/xkcd.png"), alt_text, title);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -79,48 +81,36 @@ public class Xkcd {
         return null;
     }
 
-    private File checkForFile(String name){
-        ClassLoader classLoader = getClass().getClassLoader();
-        try{
-           File file = new File(classLoader.getResource("XKCD/" + name + ".png").getFile());
-           return file;
-        }catch(NullPointerException e){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private String sendFile(File file, MessageChannel channel){
+    /**
+     * Sending the file + title to the channel of choice
+     * @param file File of the image that we're sending
+     * @param channel Channel to send the message too
+     * @param title Title of the image. Could be any text really
+     */
+    private void sendFile(File file, MessageChannel channel, String title){
         MessageBuilder builder = new MessageBuilder();
-        builder.append("Hey, I found it");
         try {
+            builder.append(title);
             channel.sendFile(file, builder.build()).queue();
         } catch (IOException e) {
             e.printStackTrace();
-            return "Error sending file";
         }
-        return "";
+    }
+}
+
+class XKCD_image{
+    private File image_file;
+    private String alt_text;
+    private String title;
+
+    XKCD_image(File image_file, String alt_text, String title){
+        this.image_file = image_file;
+        this.alt_text = alt_text;
+        this.title = title;
     }
 
-    private int getInfo(){
-        // TODO make setInfo
-        ClassLoader classLoader = getClass().getClassLoader();
-        try{
-            File file = new File(classLoader.getResource("XKCD/" + "info.txt").getFile());
-            // Should only be one line
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            return Integer.parseInt(br.readLine().trim());
-        }catch (NullPointerException e){
-            System.err.println("Error with info.txt");
-            System.exit(1);
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-            System.err.println("Error with info.txt");
-            System.exit(1);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+    public File get_image(){ return this.image_file; }
+    public String get_alt_text(){ return this.alt_text; }
+    public String get_title(){ return this.title; }
 
-        return -1;
-    }
 }
