@@ -72,43 +72,48 @@ public class MessageListener extends ListenerAdapter {
             // If it's not a command, there's still a few things it can be
             // We might call this keywords. Unsure at the moment
             String message = event.getMessage().getContent();
-
-            Pattern pattern = Pattern.compile(":(.*?):");
-            Matcher matcher = pattern.matcher(message);
+            Pattern pattern;
+            Matcher matcher;
             Boolean found = false;
-            String what_was_found = "";
 
-            while (matcher.find()) {
-                // Every other group is what we want
-                what_was_found = matcher.group(1);
-                found = true;
+            String[] patterns = new String[]{":(.*?):", //:something here:
+            "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]\\.[^\\s]{2,})" //urls Grabbed from here: http://stackoverflow.com/a/17773849
+            };
+
+            for(int i = 0; i < patterns.length; i++){
+                pattern = Pattern.compile(patterns[i]);
+                matcher = pattern.matcher(message);
+                while (matcher.find()){
+                    switch(i){
+                        case 0:
+                            String[] possible_extensions = new String[]{".gif",".png",".jpg"};
+                            Boolean image_found = false;
+                            File file = null;
+                            ClassLoader classLoader = getClass().getClassLoader();
+                            for(String extension : possible_extensions){
+                                // Testing for the file
+                                try{
+                                    file = new File(classLoader.getResource("emojis/" + matcher.group(1) + extension).getFile());
+                                }catch(NullPointerException e){
+                                    continue;
+                                }
+                                image_found = true;
+                            }
+                            if (image_found){
+                                MessageBuilder messageBuilder = new MessageBuilder();
+                                messageBuilder.append(matcher.group(1));
+                                try {
+                                    event.getChannel().sendFile(file, messageBuilder.build()).queue();
+                                }catch (IOException e){
+                                    e.printStackTrace();
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
-            if (found){
-                String[] possible_extensions = new String[]{".gif",".png",".jpg"};
-                Boolean image_found = false;
-                File file = null;
-
-                for(String extension : possible_extensions){
-                    // Testing for the file
-                    ClassLoader classLoader = getClass().getClassLoader();
-                    try{
-                        file = new File(classLoader.getResource("emojis/" +what_was_found + extension).getFile());
-                    }catch(NullPointerException e){
-                       continue;
-                    }
-                    image_found = true;
-
-                }
-                if (image_found){
-                    MessageBuilder messageBuilder = new MessageBuilder();
-                    messageBuilder.append(what_was_found);
-                    try {
-                        event.getChannel().sendFile(file, messageBuilder.build()).queue();
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-                }
-                }
 
         }
     }

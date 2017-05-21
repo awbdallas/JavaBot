@@ -8,10 +8,6 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.net.URL;
 
-
-/**
- * Created to work with XKCD stuff
- */
 public class Xkcd {
     /**
      * run is called by the thing that runs all the commands that's called by the
