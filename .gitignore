@@ -5,3 +5,4 @@ build/
 gradle/
 src/main/resources/emojis/*
 out/
+JavaBot.iml

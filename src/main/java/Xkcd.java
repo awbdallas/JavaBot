@@ -108,5 +108,4 @@ class XKCD_image{
     public File get_image(){ return this.image_file; }
     public String get_alt_text(){ return this.alt_text; }
     public String get_title(){ return this.title; }
-
 }

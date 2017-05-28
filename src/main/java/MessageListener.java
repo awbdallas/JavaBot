@@ -3,6 +3,7 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -10,11 +11,13 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageListener extends ListenerAdapter {
     private MessageCommandParser messageparser;
+    private HashMap<String, Message> hm = new HashMap<>();
 
     /** Constructor. Mostly just need the message parser at the moment
      *
@@ -109,12 +112,48 @@ public class MessageListener extends ListenerAdapter {
                                 }
                             }
                             break;
+                        case 1:
+                            // Builds as running
+                            Message found_repeat = this.hm.get(matcher.group(0));
+                            if (found_repeat != null){
+                                // Means the link was used before
+                                String found_author = found_repeat.getAuthor().getName();
+                                String time_difference = get_message_time_difference(found_repeat, event.getMessage());
+                                event.getChannel().sendMessage(String.format("Linked by: %s " +
+                                        " %s ago%n", found_author, time_difference)).queue();
+                            }else{
+                                this.hm.put(matcher.group(0), event.getMessage());
+                            }
                         default:
                             break;
                     }
                 }
             }
 
+        }
+    }
+
+    /**
+     * Needed a way to say the difference between times 
+     * @param first, second which are both Messages.
+     * @return  string with the time and type of the time since between the first and second messages
+     */
+    public String get_message_time_difference(Message first, Message second){
+        // Returns seconds, we're going to convert that to the highest we can
+        long seconds_difference = second.getCreationTime().toEpochSecond() - first.getCreationTime().toEpochSecond();
+
+        if(seconds_difference / 86400 >= 1){
+            // Days
+            return String.format("%d days", seconds_difference / 86400);
+        } else if(seconds_difference / 3600 >= 1){
+            // Hours
+            return String.format("%d hours", seconds_difference / 3600);
+        } else if(seconds_difference / 60 >= 1){
+            // Minutes
+            return String.format("%d minutes", seconds_difference / 60);
+        }else{
+            // seconds
+            return String.format("%d seconds", seconds_difference);
         }
     }
 

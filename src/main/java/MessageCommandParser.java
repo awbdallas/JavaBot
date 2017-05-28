@@ -29,7 +29,7 @@ public class MessageCommandParser {
             return new ParsedCommandMessage(split_message[0]);
         }else{
             return new ParsedCommandMessage(split_message[0],
-                    Arrays.copyOfRange(split_message, 1, split_message.length ));
+                    Arrays.copyOfRange(split_message, 1, split_message.length));
         }
     }
 
