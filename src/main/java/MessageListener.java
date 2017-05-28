@@ -2,8 +2,7 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -12,12 +11,14 @@ import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageListener extends ListenerAdapter {
     private MessageCommandParser messageparser;
     private HashMap<String, Message> hm = new HashMap<>();
+    private int got_history = 0;
 
     /** Constructor. Mostly just need the message parser at the moment
      *
@@ -34,7 +35,7 @@ public class MessageListener extends ListenerAdapter {
     public static void main(String[] args)
         throws LoginException, RateLimitedException, InterruptedException{
 
-        String token = MessageListener.getToken();
+        String token = MessageListener.get_env_var("token", true);
 
         try {
             JDA jda = new JDABuilder(AccountType.BOT)
@@ -53,6 +54,10 @@ public class MessageListener extends ListenerAdapter {
         }
     }
 
+    public void build_link_history(){
+
+    }
+
     /**
      * Trigger for the rest of the program.
      * @param   event a MessageReceievedEvent that's triggered on the bot
@@ -61,9 +66,32 @@ public class MessageListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
+        if(got_history == 0){
+            event.getChannel().sendMessage("Warming up").queue();
+            List<TextChannel> bot_channels = event.getJDA().getTextChannels();
+            String link_regex = "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]\\.[^\\s]{2,})";
+            Pattern link_pattern = Pattern.compile(link_regex);
+            for (TextChannel textchannel : bot_channels){
+                int check_amount = 1000;
+                for (Message message : textchannel.getIterableHistory()){
+                    Matcher matcher_holding = link_pattern.matcher(message.getContent());
+                    while(matcher_holding.find()){
+                        // Don't want to override current ones. It iterates backwards. As a result of this
+                        // only the last time it linked will be brought up (not first time)
+                        this.hm.putIfAbsent(matcher_holding.group(), message);
+                    }
+                    if (check_amount-- <= 0) break;
+                }
+            }
+            // Only want it to run on startup
+
+            event.getChannel().sendMessage("Done").queue();
+            this.got_history = 1;
+        }
         ParsedCommandMessage parsed_command = this.messageparser.parseMessage(event.getMessage());
         if (parsed_command != null){
             if (!event.isFromType(ChannelType.PRIVATE)){
+
                 System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
                         event.getTextChannel().getName(), event.getMember().getEffectiveName(),
                         event.getMessage().getContent());
@@ -134,7 +162,7 @@ public class MessageListener extends ListenerAdapter {
     }
 
     /**
-     * Needed a way to say the difference between times 
+     * Needed a way to say the difference between times
      * @param first, second which are both Messages.
      * @return  string with the time and type of the time since between the first and second messages
      */
@@ -158,17 +186,18 @@ public class MessageListener extends ListenerAdapter {
     }
 
     /**
-     * Returns the token for this program that's stored in
-     * environment variables. If variable is not set, will exit.
-     *
+     * Returns requested env var. Will fail if you want it too
+     * @param envvar (variable you want) fail (want it to fail?)
      * @return  string token from env.
      */
-    public static String getToken(){
-        String token = System.getenv("token");
-        if (token == null){
-            System.err.println("Token environment variable not set");
-            System.exit(1);
+    public static String get_env_var(String envvar, boolean fail){
+        String var = System.getenv(envvar);
+        if (var == null){
+           System.err.println(String.format("Environment variable: %s not set", envvar));
+           if (fail){
+               System.exit(1);
+           }
         }
-        return token;
+       return var;
     }
 }
