@@ -206,10 +206,13 @@ public class MessageListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
+        // Private I don't support. I want all the text to be in a public setting(ish)
         if(event.isFromType(ChannelType.PRIVATE)){
             event.getChannel().sendMessage("Bot doesn't support private messages").queue();
             return;
         }
+        // Kinda basic logging. Not doing to a file. Just output stream atm
+        // Could do that in the future, but not sure
         System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
                 event.getTextChannel().getName(), event.getMember().getEffectiveName(),
                 event.getMessage().getContent());

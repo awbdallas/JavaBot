@@ -1,3 +1,5 @@
+import net.dv8tion.jda.core.JDA;
+
 public class MessageCommands {
     /**
      * This was created to deal with actually running the commands.
@@ -17,6 +19,9 @@ public class MessageCommands {
             case "xkcd":
                 Xkcd xkcd = new Xkcd();
                 response = xkcd.run(command);
+                break;
+            case "sortchannels":
+                response = ChannelSorter.run(command.getEvent().getGuild());
                 break;
             default:
                 response = "Command not found";
