@@ -98,8 +98,7 @@ public class MessageListener extends ListenerAdapter {
     /**
      * Log command is just to output. May be changed later to actually have a log, but this
      * would be easier to change in the future
-     * @param   parsed_command
-     * @returns none
+     * @param   parsed_command which is the package now for all the commands
      */
     public static void log_command(ParsedCommandMessage parsed_command){
         MessageReceivedEvent event = parsed_command.getEvent();
@@ -211,6 +210,12 @@ public class MessageListener extends ListenerAdapter {
             event.getChannel().sendMessage("Bot doesn't support private messages").queue();
             return;
         }
+
+        // Don't deal with attachments because they could be anything
+        if (event.getMessage().getAttachments().size() > 0){
+            return;
+        }
+
         // Kinda basic logging. Not doing to a file. Just output stream atm
         // Could do that in the future, but not sure
         System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),

@@ -7,7 +7,7 @@ import java.util.Comparator;
 
 /**
  * Need to sort channels Alphabetically in discord. This is the best
- * way to do it. And by best, the way I figured out how how to
+ * way to do it. And by best, the way I figured out how to
  */
 public class ChannelSorter {
     /**
