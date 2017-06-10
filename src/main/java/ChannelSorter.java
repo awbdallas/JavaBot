@@ -28,6 +28,12 @@ public class ChannelSorter {
 
 class ChannelComparator implements Comparator<TextChannel> {
     /**
+     *  No use yet
+     */
+    ChannelComparator () {
+
+    }
+    /**
      * Overrided compare comparing text channels.
      * @param one, two which are both text channels
      * @return -1, 0, 1 I believe. It's just a compare to with strings

@@ -35,7 +35,7 @@ public class MessageListener extends ListenerAdapter {
     public static void main(String[] args)
         throws LoginException, RateLimitedException, InterruptedException{
 
-        String token = MessageListener.get_env_var("token", true);
+        String token = Utils.get_env_var("token", true);
 
         try {
             JDA jda = new JDABuilder(AccountType.BOT)
@@ -47,9 +47,11 @@ public class MessageListener extends ListenerAdapter {
             e.printStackTrace();
         } catch (InterruptedException e){
             // Only occurs if JDA doesn't load
+            System.out.println("Interrupted");
             e.printStackTrace();
         } catch (RateLimitedException e){
             // Discord with rate limit logins
+            System.out.println("Rate Limited");
             e.printStackTrace();
         }
     }
@@ -63,8 +65,7 @@ public class MessageListener extends ListenerAdapter {
     public void build_link_history(MessageReceivedEvent event){
         event.getChannel().sendMessage("Warming up").queue();
         List<TextChannel> bot_channels = event.getJDA().getTextChannels();
-        String link_regex = "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]\\.[^\\s]{2,})";
-        Pattern link_pattern = Pattern.compile(link_regex);
+        Pattern link_pattern = Pattern.compile(Utils.LINK_REGEX);
         for (TextChannel textchannel : bot_channels){
             int check_amount = 1000;
             for (Message message : textchannel.getIterableHistory()){
@@ -89,43 +90,10 @@ public class MessageListener extends ListenerAdapter {
      */
     public void act_on_command(ParsedCommandMessage parsed_command){
         MessageReceivedEvent event = parsed_command.getEvent();
-        log_command(parsed_command);
+        Utils.log_command(parsed_command);
         String response = MessageCommands.runCommand(parsed_command);
         event.getChannel().sendMessage(response).queue();
-        log_command(parsed_command, response);
-    }
-
-    /**
-     * Log command is just to output. May be changed later to actually have a log, but this
-     * would be easier to change in the future
-     * @param   parsed_command which is the package now for all the commands
-     */
-    public static void log_command(ParsedCommandMessage parsed_command){
-        MessageReceivedEvent event = parsed_command.getEvent();
-        System.out.printf("[%s][%s] Command: %s Arguments: \n", event.getGuild(), event.getTextChannel(),
-                parsed_command.getCommand(), parsed_command.arguments_to_string());
-    }
-
-    /**
-     * Log command is just to output. May be changed later to actually have a log, but this
-     * would be easier to change in the future. This one also gives out result
-     * @param   parsed_command, result
-     * @returns none
-     */
-    public static void log_command(ParsedCommandMessage parsed_command, String result){
-        MessageReceivedEvent event = parsed_command.getEvent();
-        System.out.printf("[%s][%s] Result: \n", event.getGuild().getName(),
-                event.getTextChannel().getName(), result);
-    }
-
-    /**
-     * Way to output easily based on text rather than a command
-     * @param   event, found, result
-     * @returns none
-     */
-    public static void log_text(MessageReceivedEvent event, String found, String result){
-        System.out.printf("[%s][%s] Found: %s Result: %s\n", event.getGuild().getName(), event.getTextChannel().getName(),
-                found, result);
+        Utils.log_command(parsed_command, response);
     }
 
     /**
@@ -142,8 +110,9 @@ public class MessageListener extends ListenerAdapter {
         Pattern pattern;
         Matcher matcher;
 
-        String[] patterns = new String[]{":(.*?):", //:something here: group 1 is inner. What we're going for
-                "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]\\.[^\\s]{2,})" //urls Grabbed from here: http://stackoverflow.com/a/17773849
+        // TODO: Figure out how to only load these once and use them later. Like an act on text object?
+        String[] patterns = new String[]{Utils.COMMAND_REGEX, //:something here: group 1 is inner. What we're going for
+                Utils.LINK_REGEX // Just checks if it's a link
         };
 
         for(int i = 0; i < patterns.length; i++){
@@ -170,7 +139,7 @@ public class MessageListener extends ListenerAdapter {
                             messageBuilder.append(matcher.group(1));
                             try {
                                 event.getChannel().sendFile(file, messageBuilder.build()).queue();
-                                log_text(event, "Found file " + matcher.group(1), "Sending image");
+                                Utils.log_text(event, "Found file " + matcher.group(1), "Sending image");
                             }catch (IOException e){
                                 e.printStackTrace();
                             }
@@ -182,8 +151,8 @@ public class MessageListener extends ListenerAdapter {
                         if (found_repeat != null){
                             // Means the link was used before
                             String found_author = found_repeat.getAuthor().getName();
-                            String time_difference = get_message_time_difference(found_repeat, event.getMessage());
-                            log_text(event, "Found repeat for " + matcher.group(0), "Calling them out");
+                            String time_difference = Utils.get_message_time_difference(found_repeat, event.getMessage());
+                            Utils.log_text(event, "Found repeat for " + matcher.group(0), "Calling them out");
                             event.getChannel().sendMessage(String.format("Last Linked by: %s " +
                                     " %s ago%n", found_author, time_difference)).queue();
                         }else{
@@ -236,43 +205,4 @@ public class MessageListener extends ListenerAdapter {
         }
     }
 
-    /**
-     * Needed a way to say the difference between times
-     * @param first, second which are both Messages.
-     * @return  string with the time and type of the time since between the first and second messages
-     */
-    public String get_message_time_difference(Message first, Message second){
-        // Returns seconds, we're going to convert that to the highest we can
-        long seconds_difference = second.getCreationTime().toEpochSecond() - first.getCreationTime().toEpochSecond();
-
-        if(seconds_difference / 86400 >= 1){
-            // Days
-            return String.format("%d days", seconds_difference / 86400);
-        } else if(seconds_difference / 3600 >= 1){
-            // Hours
-            return String.format("%d hours", seconds_difference / 3600);
-        } else if(seconds_difference / 60 >= 1){
-            // Minutes
-            return String.format("%d minutes", seconds_difference / 60);
-        }else{
-            // seconds
-            return String.format("%d seconds", seconds_difference);
-        }
-    }
-
-    /**
-     * Returns requested env var. Will fail if you want it too
-     * @param envvar (variable you want) fail (want it to fail?)
-     * @return  string token from env.
-     */
-    public static String get_env_var(String envvar, boolean fail){
-        String var = System.getenv(envvar);
-        if (var == null){
-           System.err.println(String.format("Environment variable: %s not set", envvar));
-           if (fail){
-               System.exit(1);
-           }
-        }
-       return var;
-    }
 }
