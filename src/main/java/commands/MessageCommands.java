@@ -1,4 +1,8 @@
-import net.dv8tion.jda.core.JDA;
+package commands;
+
+import commands.ChannelSorter;
+import commands.Ping;
+import commands.Xkcd;
 
 public class MessageCommands {
     /**

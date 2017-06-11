@@ -1,12 +1,15 @@
+package commands;
+
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import utils.Utils;
 
 import java.util.Arrays;
 
 public class MessageCommandParser {
     private String context;
 
-    MessageCommandParser() {
-        this.context = getContextVariable();
+    public MessageCommandParser() {
+        this.context = Utils.get_env_var("context_var", true);
     }
 
     /** Checking if it's a command, then grabbing command and
@@ -32,20 +35,5 @@ public class MessageCommandParser {
                     Arrays.copyOfRange(split_message, 1, split_message.length),
                     event);
         }
-    }
-
-    /** Grabbing context variable setting from environement
-     * @returns String context (environemnt variable)
-     */
-    private static String getContextVariable(){
-        String context = System.getenv("context_var");
-        if (context == null){
-            System.err.println("Context variable not set:");
-            System.exit(1);
-        }else if (context.length() != 1){
-            System.err.println("Invalid length for context");
-            System.exit(1);
-        }
-        return context;
     }
 }

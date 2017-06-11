@@ -1,3 +1,8 @@
+package listeners;
+
+import commands.MessageCommandParser;
+import commands.MessageCommands;
+import commands.ParsedCommandMessage;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -6,6 +11,7 @@ import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import utils.Utils;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -28,7 +34,7 @@ public class MessageListener extends ListenerAdapter {
     }
 
     /** * Main. Starts the program. Mostly just gets token, logs in, and sets
-     * the event listener as the MessageListener. After that it's handed off
+     * the event listener as the listeners.MessageListener. After that it's handed off
      * @param   args  just args for the program
      * @returns none
      */
@@ -42,6 +48,7 @@ public class MessageListener extends ListenerAdapter {
                     .setToken(token)
                     .buildBlocking();
             jda.addEventListener(new MessageListener());
+            jda.addEventListener(new VoiceChannelListener());
         } catch (LoginException e){
             // Login to discord error
             e.printStackTrace();

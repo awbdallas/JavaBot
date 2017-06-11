@@ -1,3 +1,6 @@
+package utils;
+
+import commands.ParsedCommandMessage;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -17,7 +20,7 @@ public class Utils {
     public static String get_env_var(String envvar, boolean fail){
         String var = System.getenv(envvar);
         if (var == null){
-            System.err.println(String.format("Environment variable: %s not set", envvar));
+            System.err.println(String.format("Environment variable: (%s) not set", envvar));
             if (fail){
                 System.exit(1);
             }

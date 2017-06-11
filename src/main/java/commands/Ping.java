@@ -1,3 +1,5 @@
+package commands;
+
 public class Ping {
     /**
      * Response with a pong to pings
