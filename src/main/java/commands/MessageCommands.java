@@ -21,11 +21,14 @@ public class MessageCommands {
                 response = Ping.run();
                 break;
             case "xkcd":
-                Xkcd xkcd = new Xkcd();
-                response = xkcd.run(command);
+                response = Xkcd.run(command);
                 break;
             case "sortchannels":
+                // I really should just change that to command
                 response = ChannelSorter.run(command.getEvent().getGuild());
+                break;
+            case "watch":
+                response = Watch.run(command);
                 break;
             default:
                 response = "Command not found";

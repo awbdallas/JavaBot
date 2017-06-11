@@ -181,6 +181,10 @@ public class MessageListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
+        // :( No bots plz
+        if(event.getAuthor().isBot()){
+            return;
+        }
         // Private I don't support. I want all the text to be in a public setting(ish)
         if(event.isFromType(ChannelType.PRIVATE)){
             event.getChannel().sendMessage("Bot doesn't support private messages").queue();

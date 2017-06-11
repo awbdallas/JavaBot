@@ -17,7 +17,7 @@ public class Xkcd {
      * @param message which is a parsed command so we know it's xkcd
      * @return string that will be the alt_text of the image or an error message
      */
-    public String run(ParsedCommandMessage message){
+    public static String run(ParsedCommandMessage message){
         XKCD_image holding;
         if (message.getArguments()[0].equals("None")){
             holding = getComic(false);
@@ -30,7 +30,7 @@ public class Xkcd {
                     holding.get_title());
             return holding.get_alt_text();
         }
-        return "I mean, probably was an error somewhere";
+        return "Unknown ERROR with xkcd";
     }
 
     /**
@@ -39,7 +39,7 @@ public class Xkcd {
      * @return will return an commands.XKCD_image which is more or less acting like a
      * struct containing all the info
      */
-    private XKCD_image getComic(Boolean random){
+    private static XKCD_image getComic(Boolean random){
         String image_link = null;
         String alt_text = null;
         String title = null;
@@ -52,7 +52,6 @@ public class Xkcd {
                 doc = Jsoup.connect("https://www.xkcd.com").get();
             }
             Elements picture = doc.select("img[src$=.png]");
-            ClassLoader classLoader = getClass().getClassLoader();
             for (Element element : picture){
                 if (element.attr("abs:src").contains("comics")){
                     image_link = element.attr("abs:src");
@@ -85,7 +84,7 @@ public class Xkcd {
      * @param channel Channel to send the message too
      * @param title Title of the image. Could be any text really
      */
-    private void sendFile(File file, MessageChannel channel, String title){
+    private static void sendFile(File file, MessageChannel channel, String title){
         MessageBuilder builder = new MessageBuilder();
         try {
             builder.append(title);

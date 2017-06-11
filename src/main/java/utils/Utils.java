@@ -2,6 +2,8 @@ package utils;
 
 import commands.ParsedCommandMessage;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.VoiceChannel;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 /**
@@ -83,5 +85,20 @@ public class Utils {
     public static void log_text(MessageReceivedEvent event, String found, String result){
         System.out.printf("[%s][%s] Found: %s Result: %s\n", event.getGuild().getName(), event.getTextChannel().getName(),
                 found, result);
+    }
+
+    /**
+     *
+     * @param event GuildVoiceJoinEvent for grabbing guild and voice channels
+     * @return count of amount of people that are in that guilds voice server
+     */
+    public static int getAmountOfPeopleInVoice(GuildVoiceJoinEvent event) {
+        int count = 0;
+        for (VoiceChannel voiceChannel : event.getGuild().getVoiceChannels()){
+            if (!(voiceChannel == event.getGuild().getAfkChannel())){
+                count += voiceChannel.getMembers().size();
+            }
+        }
+        return count;
     }
 }
