@@ -22,15 +22,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageListener extends ListenerAdapter {
-    private MessageCommandParser messageparser;
+    private MessageCommandParser messageCommandParser;
     private HashMap<String, Message> hm = new HashMap<>();
-    private int got_history = 0;
 
     /** Constructor. Mostly just need the message parser at the moment
      *
      */
-    public MessageListener(){
-        this.messageparser = new MessageCommandParser();
+    public MessageListener(JDA jda){
+        this.messageCommandParser = new MessageCommandParser();
+        build_link_history(jda);
     }
 
     /** * Main. Starts the program. Mostly just gets token, logs in, and sets
@@ -47,17 +47,16 @@ public class MessageListener extends ListenerAdapter {
             JDA jda = new JDABuilder(AccountType.BOT)
                     .setToken(token)
                     .buildBlocking();
-            jda.addEventListener(new MessageListener());
+            jda.addEventListener(new MessageListener(jda));
             jda.addEventListener(new VoiceChannelListener());
+            jda.addEventListener(new ChannelMovedListener());
+
         } catch (LoginException e){
-            // Login to discord error
             e.printStackTrace();
         } catch (InterruptedException e){
-            // Only occurs if JDA doesn't load
             System.out.println("Interrupted");
             e.printStackTrace();
         } catch (RateLimitedException e){
-            // Discord with rate limit logins
             System.out.println("Rate Limited");
             e.printStackTrace();
         }
@@ -66,27 +65,23 @@ public class MessageListener extends ListenerAdapter {
     /**
      * Build link history is to build up hm which is a hash map of all the links with messages
      * which is needed for checking if a link was used.
-     * @param   event
+     * @param   jda
      * @returns none
      */
-    public void build_link_history(MessageReceivedEvent event){
-        event.getChannel().sendMessage("Warming up").queue();
-        List<TextChannel> bot_channels = event.getJDA().getTextChannels();
+
+    public  void build_link_history(JDA jda){
+        List<TextChannel> bot_channels = jda.getTextChannels();
         Pattern link_pattern = Pattern.compile(Utils.LINK_REGEX);
         for (TextChannel textchannel : bot_channels){
             int check_amount = 1000;
             for (Message message : textchannel.getIterableHistory()){
                 Matcher matcher_holding = link_pattern.matcher(message.getContent());
                 while(matcher_holding.find()){
-                    // Don't want to override current ones. It iterates backwards. As a result of this
-                    // only the last time it linked will be brought up (not first time)
                     this.hm.put(matcher_holding.group(), message);
                 }
                 if (check_amount-- <= 0) break;
             }
         }
-        event.getChannel().sendMessage("Done").queue();
-        this.got_history = 1;
     }
 
     /**
@@ -201,14 +196,7 @@ public class MessageListener extends ListenerAdapter {
         System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
                 event.getTextChannel().getName(), event.getMember().getEffectiveName(),
                 event.getMessage().getContent());
-        // Few reasons this is here. Main is that I can't reference from a static context
-        // and this is the first chance I'll get to build the history, other is because it allows a
-        // after each
-        if (this.got_history == 0){
-            build_link_history(event);
-        }
-
-        ParsedCommandMessage parsed_command = this.messageparser.parseMessage(event);
+        ParsedCommandMessage parsed_command = this.messageCommandParser.parseMessage(event);
         if (parsed_command != null){
             act_on_command(parsed_command);
         }else{

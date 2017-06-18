@@ -20,19 +20,22 @@ public class VoiceChannelListener extends ListenerAdapter{
 
     VoiceChannelListener () { }
 
+    /**
+     * Triggers on guild voice join. At the moment it just watches and checks
+     * the watch file to figure out if it needs to ping anyone.
+     * @param event
+     */
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
         System.out.printf("[%s][Voice Channel: %s] %s Joined",
                 event.getGuild().getName(), event.getChannelJoined().getName(),
                 event.getMember().getEffectiveName());
-        // Would be one not zero since person just joined
         if (Utils.getAmountOfPeopleInVoice(event) == 1){
             lookupWatchFileForWatchers(event.getJDA());
         }
     }
 
     public void lookupWatchFileForWatchers(JDA jda){
-        // Lol, does this actually work?
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(this.getClass().getResourceAsStream("/watch_list.txt"))
         );

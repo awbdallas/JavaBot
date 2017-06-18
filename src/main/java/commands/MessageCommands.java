@@ -1,9 +1,5 @@
 package commands;
 
-import commands.ChannelSorter;
-import commands.Ping;
-import commands.Xkcd;
-
 public class MessageCommands {
     /**
      * This was created to deal with actually running the commands.
@@ -22,10 +18,6 @@ public class MessageCommands {
                 break;
             case "xkcd":
                 response = Xkcd.run(command);
-                break;
-            case "sortchannels":
-                // I really should just change that to command
-                response = ChannelSorter.run(command.getEvent().getGuild());
                 break;
             case "watch":
                 response = Watch.run(command);
