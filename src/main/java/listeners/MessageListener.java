@@ -50,7 +50,6 @@ public class MessageListener extends ListenerAdapter {
             jda.addEventListener(new MessageListener(jda));
             jda.addEventListener(new VoiceChannelListener());
             jda.addEventListener(new ChannelMovedListener());
-
         } catch (LoginException e){
             e.printStackTrace();
         } catch (InterruptedException e){
