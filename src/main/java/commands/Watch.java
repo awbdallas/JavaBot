@@ -4,9 +4,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-/**
- * Created by austinbriggs on 6/11/17.
- */
 public class Watch {
     Watch () { }
 

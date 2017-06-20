@@ -12,6 +12,10 @@ public class MessageCommandParser {
         this.context = Utils.get_env_var("context_var", true);
     }
 
+    public MessageCommandParser(String context){
+        this.context = context;
+    }
+
     /** Checking if it's a command, then grabbing command and
      * any arguments it may have.
      * @param  event which is a typeof event

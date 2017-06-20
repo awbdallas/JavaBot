@@ -33,33 +33,6 @@ public class MessageListener extends ListenerAdapter {
         build_link_history(jda);
     }
 
-    /** * Main. Starts the program. Mostly just gets token, logs in, and sets
-     * the event listener as the listeners.MessageListener. After that it's handed off
-     * @param   args  just args for the program
-     * @returns none
-     */
-    public static void main(String[] args)
-        throws LoginException, RateLimitedException, InterruptedException{
-
-        String token = Utils.get_env_var("token", true);
-
-        try {
-            JDA jda = new JDABuilder(AccountType.BOT)
-                    .setToken(token)
-                    .buildBlocking();
-            jda.addEventListener(new MessageListener(jda));
-            jda.addEventListener(new VoiceChannelListener());
-            jda.addEventListener(new ChannelMovedListener());
-        } catch (LoginException e){
-            e.printStackTrace();
-        } catch (InterruptedException e){
-            System.out.println("Interrupted");
-            e.printStackTrace();
-        } catch (RateLimitedException e){
-            System.out.println("Rate Limited");
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Build link history is to build up hm which is a hash map of all the links with messages

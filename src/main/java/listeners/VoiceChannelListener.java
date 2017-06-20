@@ -1,24 +1,19 @@
 package listeners;
 
 import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.PrivateChannel;
-import net.dv8tion.jda.core.events.channel.priv.PrivateChannelCreateEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import net.dv8tion.jda.core.requests.RestAction;
 import utils.Utils;
 
-import javax.print.DocFlavor;
 import java.io.*;
-import java.util.List;
 
 /**
  *
  */
 public class VoiceChannelListener extends ListenerAdapter{
 
-    VoiceChannelListener () { }
+    public VoiceChannelListener() { }
 
     /**
      * Triggers on guild voice join. At the moment it just watches and checks

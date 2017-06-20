@@ -9,7 +9,7 @@ import net.dv8tion.jda.core.requests.restaction.order.ChannelOrderAction;
 import java.util.Comparator;
 
 public class ChannelMovedListener extends ListenerAdapter {
-    ChannelMovedListener(){ }
+    public ChannelMovedListener(){ }
 
     @Override
     public void onTextChannelUpdatePosition(TextChannelUpdatePositionEvent event){
