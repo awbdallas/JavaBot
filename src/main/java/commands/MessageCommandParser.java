@@ -9,7 +9,7 @@ public class MessageCommandParser {
     private String context;
 
     public MessageCommandParser() {
-        this.context = Utils.get_env_var("context_var", true);
+        this.context = Utils.getEnvVar("context_var", true);
     }
 
     public MessageCommandParser(String context){
@@ -22,21 +22,21 @@ public class MessageCommandParser {
      * @returns array with 0 being command and 1 - end being arguments
      */
     public ParsedCommandMessage parseMessage(MessageReceivedEvent event){
-        String holding = event.getMessage().getStrippedContent();
-        String[] split_message;
+        String strippedMessage = event.getMessage().getStrippedContent();
+        String[] splitMessage;
 
-        if (!holding.substring(0,1).equals(this.context) &&
-                holding.length() > 1){
+        if (!strippedMessage.substring(0, 1).equals(this.context) || strippedMessage.length() == 1){
             return null;
         }
-        holding = holding.substring(1, holding.length());
-        split_message = holding.split(" ");
 
-        if (split_message.length == 1){
-            return new ParsedCommandMessage(split_message[0], event);
+        strippedMessage = strippedMessage.substring(1, strippedMessage.length());
+        splitMessage = strippedMessage.split(" ");
+
+        if (splitMessage.length == 1){
+            return new ParsedCommandMessage(splitMessage[0], event);
         }else{
-            return new ParsedCommandMessage(split_message[0],
-                    Arrays.copyOfRange(split_message, 1, split_message.length),
+            return new ParsedCommandMessage(splitMessage[0],
+                    Arrays.copyOfRange(splitMessage, 1, splitMessage.length),
                     event);
         }
     }

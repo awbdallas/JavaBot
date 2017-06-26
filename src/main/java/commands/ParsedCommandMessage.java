@@ -22,7 +22,7 @@ public class ParsedCommandMessage {
         this.event = event;
     }
 
-    public String arguments_to_string(){
+    public String argumentsToString(){
         String returning = "";
 
         for (String holding : this.arguments){

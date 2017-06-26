@@ -8,9 +8,6 @@ import utils.Utils;
 
 import java.io.*;
 
-/**
- *
- */
 public class VoiceChannelListener extends ListenerAdapter{
 
     public VoiceChannelListener() { }
@@ -31,9 +28,7 @@ public class VoiceChannelListener extends ListenerAdapter{
     }
 
     public void lookupWatchFileForWatchers(JDA jda){
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(this.getClass().getResourceAsStream("/watch_list.txt"))
-        );
+        BufferedReader in = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("/watch_list.txt")));
         try{
             String inputLine = "default";
             while ((inputLine = in.readLine()) != null){
@@ -48,8 +43,6 @@ public class VoiceChannelListener extends ListenerAdapter{
             System.out.println("Error reading file");
             return;
         }
-
-
     }
 
     public void wipeWatchFile(){

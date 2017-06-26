@@ -19,7 +19,7 @@ public class JavaBot {
     public static void main(String[] args)
             throws LoginException, RateLimitedException, InterruptedException{
 
-        String token = Utils.get_env_var("token", true);
+        String token = Utils.getEnvVar("token", true);
 
         try {
             JDA jda = new JDABuilder(AccountType.BOT)

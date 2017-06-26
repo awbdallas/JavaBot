@@ -3,17 +3,13 @@ package listeners;
 import commands.MessageCommandParser;
 import commands.MessageCommands;
 import commands.ParsedCommandMessage;
-import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import utils.Utils;
 
-import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -25,12 +21,9 @@ public class MessageListener extends ListenerAdapter {
     private MessageCommandParser messageCommandParser;
     private HashMap<String, Message> hm = new HashMap<>();
 
-    /** Constructor. Mostly just need the message parser at the moment
-     *
-     */
     public MessageListener(JDA jda){
         this.messageCommandParser = new MessageCommandParser();
-        build_link_history(jda);
+        buildLinkHistory(jda);
     }
 
 
@@ -40,18 +33,17 @@ public class MessageListener extends ListenerAdapter {
      * @param   jda
      * @returns none
      */
-
-    public  void build_link_history(JDA jda){
-        List<TextChannel> bot_channels = jda.getTextChannels();
-        Pattern link_pattern = Pattern.compile(Utils.LINK_REGEX);
-        for (TextChannel textchannel : bot_channels){
-            int check_amount = 1000;
+    public  void buildLinkHistory(JDA jda){
+        List<TextChannel> botChannels = jda.getTextChannels();
+        Pattern linkPattern = Pattern.compile(Utils.LINK_REGEX);
+        for (TextChannel textchannel : botChannels){
+            int checkAmount = 1000;
             for (Message message : textchannel.getIterableHistory()){
-                Matcher matcher_holding = link_pattern.matcher(message.getContent());
-                while(matcher_holding.find()){
-                    this.hm.put(matcher_holding.group(), message);
+                Matcher matcherHolding = linkPattern.matcher(message.getContent());
+                while(matcherHolding.find()){
+                    this.hm.put(matcherHolding.group(), message);
                 }
-                if (check_amount-- <= 0) break;
+                if (checkAmount-- <= 0) break;
             }
         }
     }
@@ -59,15 +51,15 @@ public class MessageListener extends ListenerAdapter {
     /**
      * Well, we know it's possibly a command, so we're going to act on the command
      * by giving it a parsed command and go from there.
-     * @param   parsed_command
+     * @param   parsedCommand
      * @returns none
      */
-    public void act_on_command(ParsedCommandMessage parsed_command){
-        MessageReceivedEvent event = parsed_command.getEvent();
-        Utils.log_command(parsed_command);
-        String response = MessageCommands.runCommand(parsed_command);
+    public void actOnCommand(ParsedCommandMessage parsedCommand){
+        MessageReceivedEvent event = parsedCommand.getEvent();
+        Utils.logCommand(parsedCommand);
+        String response = MessageCommands.runCommand(parsedCommand);
         event.getChannel().sendMessage(response).queue();
-        Utils.log_command(parsed_command, response);
+        Utils.logCommand(parsedCommand, response);
     }
 
     /**
@@ -77,15 +69,13 @@ public class MessageListener extends ListenerAdapter {
      * @param   event
      * @returns none
      */
-    public void act_on_text(MessageReceivedEvent event){
-        // If it's not a command, there's still a few things it can be
-        // We might call this keywords. Unsure at the moment
+    public void actOnText(MessageReceivedEvent event){
         String message = event.getMessage().getContent();
         Pattern pattern;
         Matcher matcher;
 
         // TODO: Figure out how to only load these once and use them later. Like an act on text object?
-        String[] patterns = new String[]{Utils.COMMAND_REGEX, //:something here: group 1 is inner. What we're going for
+        String[] patterns = new String[]{Utils.COMMAND_REGEX, // something here: group 1 is inner. What we're going for
                 Utils.LINK_REGEX // Just checks if it's a link
         };
 
@@ -96,7 +86,7 @@ public class MessageListener extends ListenerAdapter {
                 switch(i){
                     case 0:
                         String[] possible_extensions = new String[]{".gif",".png",".jpg"};
-                        Boolean image_found = false;
+                        Boolean imageFound = false;
                         File file = null;
                         ClassLoader classLoader = getClass().getClassLoader();
                         for(String extension : possible_extensions){
@@ -106,14 +96,14 @@ public class MessageListener extends ListenerAdapter {
                             }catch(NullPointerException e){
                                 continue;
                             }
-                            image_found = true;
+                            imageFound = true;
                         }
-                        if (image_found){
+                        if (imageFound){
                             MessageBuilder messageBuilder = new MessageBuilder();
                             messageBuilder.append(matcher.group(1));
                             try {
                                 event.getChannel().sendFile(file, messageBuilder.build()).queue();
-                                Utils.log_text(event, "Found file " + matcher.group(1), "Sending image");
+                                Utils.logText(event, "Found file " + matcher.group(1), "Sending image");
                             }catch (IOException e){
                                 e.printStackTrace();
                             }
@@ -124,11 +114,11 @@ public class MessageListener extends ListenerAdapter {
                         Message found_repeat = this.hm.get(matcher.group(0));
                         if (found_repeat != null){
                             // Means the link was used before
-                            String found_author = found_repeat.getAuthor().getName();
-                            String time_difference = Utils.get_message_time_difference(found_repeat, event.getMessage());
-                            Utils.log_text(event, "Found repeat for " + matcher.group(0), "Calling them out");
+                            String foundAuthor = found_repeat.getAuthor().getName();
+                            String messageTimeDifference = Utils.getMessageTimeDifference(found_repeat, event.getMessage());
+                            Utils.logText(event, "Found repeat for " + matcher.group(0), "Calling them out");
                             event.getChannel().sendMessage(String.format("Last Linked by: %s " +
-                                    " %s ago%n", found_author, time_difference)).queue();
+                                    " %s ago%n", foundAuthor, messageTimeDifference)).queue();
                         }else{
                             this.hm.put(matcher.group(0), event.getMessage());
                         }
@@ -148,11 +138,10 @@ public class MessageListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
-        // :( No bots plz
         if(event.getAuthor().isBot()){
             return;
         }
-        // Private I don't support. I want all the text to be in a public setting(ish)
+
         if(event.isFromType(ChannelType.PRIVATE)){
             event.getChannel().sendMessage("Bot doesn't support private messages").queue();
             return;
@@ -163,16 +152,15 @@ public class MessageListener extends ListenerAdapter {
             return;
         }
 
-        // Kinda basic logging. Not doing to a file. Just output stream atm
-        // Could do that in the future, but not sure
+        // TODO: Move all logging into a file of some sort. At the moment it's all STDOUT
         System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
                 event.getTextChannel().getName(), event.getMember().getEffectiveName(),
                 event.getMessage().getContent());
-        ParsedCommandMessage parsed_command = this.messageCommandParser.parseMessage(event);
-        if (parsed_command != null){
-            act_on_command(parsed_command);
+        ParsedCommandMessage parsedCommandMessage = this.messageCommandParser.parseMessage(event);
+        if (parsedCommandMessage != null){
+            actOnCommand(parsedCommandMessage);
         }else{
-            act_on_text(event);
+            actOnText(event);
         }
     }
 
