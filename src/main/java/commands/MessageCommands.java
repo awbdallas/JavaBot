@@ -1,31 +1,40 @@
 package commands;
 
+import org.reflections.Reflections;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 public class MessageCommands {
-    /**
-     * This was created to deal with actually running the commands.
-     * At the moment it's not that sophisticated and just runs via
-     * a switch. May make changes in the future.
-     *
-     * @param command which is a parsed message containing commands
-     *                and arguments
-     * @return String with what should be the response
-     */
-    public static String runCommand(ParsedCommandMessage command){
-        String response;
-        switch(command.getCommand()){
-            case "ping":
-                response = Ping.run();
-                break;
-            case "xkcd":
-                response = Xkcd.run(command);
-                break;
-            case "watch":
-                response = Watch.run(command);
-                break;
-            default:
-                response = "Command not found";
+    private List<Command> commandObjects;
+
+
+    public MessageCommands () {
+        Reflections reflections = new Reflections("commands");
+        Set<Class<? extends Command>> subtypes = reflections.getSubTypesOf(Command.class);
+
+        commandObjects = new ArrayList<>(subtypes.size());
+
+        for (Class command : subtypes) {
+            try{
+                commandObjects.add(Command.class.cast(command.newInstance()));
+            }catch (InstantiationException e){
+                e.printStackTrace();
+            }catch (IllegalAccessException e){
+               e.printStackTrace();
+            }
         }
-        return response;
+    }
+
+    public void runCommand(ParsedCommandMessage parsedCommandMessage){
+        for (Command command : commandObjects) {
+            if (command.getCommand().equals(parsedCommandMessage.getCommand())){
+               command.run(parsedCommandMessage);
+               return;
+            }
+        }
+
+        parsedCommandMessage.setResponse("Unable to find command");
     }
 }
-

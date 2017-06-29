@@ -20,10 +20,12 @@ import java.util.regex.Pattern;
 public class MessageListener extends ListenerAdapter {
     private MessageCommandParser messageCommandParser;
     private HashMap<String, Message> hm = new HashMap<>();
+    private MessageCommands messageCommands;
 
     public MessageListener(JDA jda){
         this.messageCommandParser = new MessageCommandParser();
         buildLinkHistory(jda);
+        messageCommands = new MessageCommands();
     }
 
 
@@ -57,9 +59,9 @@ public class MessageListener extends ListenerAdapter {
     public void actOnCommand(ParsedCommandMessage parsedCommand){
         MessageReceivedEvent event = parsedCommand.getEvent();
         Utils.logCommand(parsedCommand);
-        String response = MessageCommands.runCommand(parsedCommand);
-        event.getChannel().sendMessage(response).queue();
-        Utils.logCommand(parsedCommand, response);
+        messageCommands.runCommand(parsedCommand);
+        event.getChannel().sendMessage(parsedCommand.getResponse()).queue();
+        Utils.logCommand(parsedCommand, parsedCommand.getResponse());
     }
 
     /**
@@ -74,7 +76,6 @@ public class MessageListener extends ListenerAdapter {
         Pattern pattern;
         Matcher matcher;
 
-        // TODO: Figure out how to only load these once and use them later. Like an act on text object?
         String[] patterns = new String[]{Utils.COMMAND_REGEX, // something here: group 1 is inner. What we're going for
                 Utils.LINK_REGEX // Just checks if it's a link
         };

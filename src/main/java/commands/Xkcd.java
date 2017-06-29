@@ -10,27 +10,32 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.net.URL;
 
-public class Xkcd {
+public class Xkcd implements Command {
+    private final String command = "xkcd";
+
     /**
      * run is called by the thing that runs all the commands that's called by the
      * on message recieved
      * @param message which is a parsed command so we know it's xkcd
      * @return string that will be the altText of the image or an error message
      */
-    public static String run(ParsedCommandMessage message){
+    public void run(ParsedCommandMessage message){
         XKCDImage holding;
         if (message.getArguments()[0].equals("None")){
             holding = getComic(false);
             sendFile(holding.get_image(), message.getEvent().getChannel(),
                     holding.get_title());
-            return holding.get_alt_text();
+            message.setResponse(holding.get_alt_text());
         }else if(message.getArguments()[0].toLowerCase().equals("random")){
             holding = getComic(true);
             sendFile(holding.get_image(), message.getEvent().getChannel(),
                     holding.get_title());
-            return holding.get_alt_text();
+            message.setResponse(holding.get_alt_text());
         }
-        return "Unknown ERROR with xkcd";
+
+        if(message.getResponse() == null){
+            message.setResponse("Error getting image. Please don't hate me.");
+        }
     }
 
     /**
@@ -92,6 +97,10 @@ public class Xkcd {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getCommand() {
+        return command;
     }
 }
 

@@ -4,10 +4,10 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class Watch {
-    Watch () { }
+public class Watch implements Command {
+    private final String command = "watch";
 
-    public static String run(ParsedCommandMessage command){
+    public void run(ParsedCommandMessage command){
         try{
             String filePathForWatchList = command.getEvent().getClass().getResource("/watch_list.txt").getPath();
             BufferedWriter out = new BufferedWriter(new FileWriter(filePathForWatchList));
@@ -16,8 +16,12 @@ public class Watch {
         }catch(IOException e){
             e.printStackTrace();
             System.out.println("Error writing new name to watch file");
-            return "There was an error adding your name to the list";
+            command.setResponse("Error adding your name to the list");
         }
-        return "Your name has been added to the list";
+        command.setResponse("Your name has been added to the list");
+    }
+
+    public String getCommand(){
+        return command;
     }
 }

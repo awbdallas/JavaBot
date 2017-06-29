@@ -6,11 +6,10 @@ public class ParsedCommandMessage {
     private String command;
     private String[] arguments;
     private MessageReceivedEvent event;
+    private String response;
 
     ParsedCommandMessage(String command, MessageReceivedEvent event){
         this.command = command;
-        // Trying to avoid null problems, but still making sure
-        // No arguments
         this.arguments = new String[]{"None"};
         this.event = event;
     }
@@ -31,12 +30,13 @@ public class ParsedCommandMessage {
         return returning;
     }
 
-    public void setCommand(String newCommand){ this.command = newCommand; }
+    public void setCommand(String newCommand) { this.command = newCommand; }
     public void setArguments(String[] arguments) { this.arguments = arguments; }
     public void setEvent(MessageReceivedEvent event) { this.event = event; }
+    public void setResponse(String response) { this.response = response; }
 
-    public String[] getArguments(){ return this.arguments; }
-    public String getCommand(){ return this.command; }
-    public MessageReceivedEvent getEvent(){ return this.event; }
-
+    public String[] getArguments() { return this.arguments; }
+    public String getCommand() { return this.command; }
+    public MessageReceivedEvent getEvent() { return this.event; }
+    public String getResponse() { return this.response; }
 }
