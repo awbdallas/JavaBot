@@ -165,4 +165,8 @@ public class MessageListener extends ListenerAdapter {
         }
     }
 
+    public MessageCommands getMessageCommands() {
+        return messageCommands;
+    }
+
 }

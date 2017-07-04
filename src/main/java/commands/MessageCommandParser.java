@@ -3,7 +3,9 @@ package commands;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import utils.Utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MessageCommandParser {
     private String context;
@@ -36,8 +38,33 @@ public class MessageCommandParser {
             return new ParsedCommandMessage(splitMessage[0], event);
         }else{
             return new ParsedCommandMessage(splitMessage[0],
-                    Arrays.copyOfRange(splitMessage, 1, splitMessage.length),
-                    event);
+                    parseArguments(Arrays.copyOfRange(splitMessage, 1, splitMessage.length)), event);
         }
+    }
+
+    /**
+     * Breaking up into command + arguments
+     * @param arguments
+     * @return
+     */
+    public List<String[]> parseArguments(String[] arguments) {
+        List<String[]> listOfCommands = new ArrayList<>();
+        List<String> buildingListOfArguments = new ArrayList<>();
+
+        for (int i = 0; i < arguments.length; i ++) {
+            if (arguments[i].substring(0,1).equals("-")) {
+                if (buildingListOfArguments.size() != 0){
+                    listOfCommands.add(buildingListOfArguments.toArray(new String[buildingListOfArguments.size()]));
+                    buildingListOfArguments.clear();
+                }
+                buildingListOfArguments.add(arguments[i].substring(1));
+            }else{
+                buildingListOfArguments.add(arguments[i]);
+            }
+        }
+        if (buildingListOfArguments.size() != 0){
+            listOfCommands.add(buildingListOfArguments.toArray(new String[buildingListOfArguments.size()]));
+        }
+        return listOfCommands;
     }
 }

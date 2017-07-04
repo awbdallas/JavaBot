@@ -34,7 +34,10 @@ public class MessageCommands {
                return;
             }
         }
-
         parsedCommandMessage.setResponse("Unable to find command");
+    }
+
+    public List<Command> getCommandObjects() {
+        return commandObjects;
     }
 }

@@ -15,27 +15,51 @@ public class Xkcd implements Command {
 
     /**
      * run is called by the thing that runs all the commands that's called by the
-     * on message recieved
-     * @param message which is a parsed command so we know it's xkcd
-     * @return string that will be the altText of the image or an error message
+     * on parsedCommandMessage received
+     * @param parsedCommandMessage which is a parsed command so we know it's xkcd
+     * @return string that will be the altText of the image or an error parsedCommandMessage
      */
-    public void run(ParsedCommandMessage message){
+    public void run(ParsedCommandMessage parsedCommandMessage){
         XKCDImage holding;
-        if (message.getArguments()[0].equals("None")){
-            holding = getComic(false);
-            sendFile(holding.get_image(), message.getEvent().getChannel(),
-                    holding.get_title());
-            message.setResponse(holding.get_alt_text());
-        }else if(message.getArguments()[0].toLowerCase().equals("random")){
-            holding = getComic(true);
-            sendFile(holding.get_image(), message.getEvent().getChannel(),
-                    holding.get_title());
-            message.setResponse(holding.get_alt_text());
+        if (parsedCommandMessage.getArguments().size() == 0){
+            runWithOutArguments(parsedCommandMessage);
+        } else {
+            runWithArguments(parsedCommandMessage);
+        }
+        if(parsedCommandMessage.getResponse() == null){
+            parsedCommandMessage.setResponse("Error getting image. Please don't hate me.");
+        }
+    }
+
+    private void runWithArguments(ParsedCommandMessage parsedCommandMessage) {
+        for (String[] command : parsedCommandMessage.getArguments()){
+            if (command == null){
+                continue;
+            }
+            switch (command[0]){
+                case "help":
+                    parsedCommandMessage.appendToResponse("xkcd -help -random");
+                    break;
+                case "random":
+                    XKCDImage holding;
+                    holding = getComic(true);
+                    sendFile(holding.get_image(), parsedCommandMessage.getEvent().getChannel(),
+                            holding.get_title());
+                    parsedCommandMessage.appendToResponse("Alt Text: " + holding.get_alt_text());
+                    break;
+                default:
+                    parsedCommandMessage.appendToResponse("Command not understood " + command[0]);
+            }
         }
 
-        if(message.getResponse() == null){
-            message.setResponse("Error getting image. Please don't hate me.");
-        }
+    }
+
+    private void runWithOutArguments(ParsedCommandMessage parsedCommandMessage) {
+        XKCDImage holding;
+        holding = getComic(false);
+        sendFile(holding.get_image(), parsedCommandMessage.getEvent().getChannel(),
+                holding.get_title());
+        parsedCommandMessage.setResponse(holding.get_alt_text());
     }
 
     /**

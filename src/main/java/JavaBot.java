@@ -25,8 +25,9 @@ public class JavaBot {
             JDA jda = new JDABuilder(AccountType.BOT)
                     .setToken(token)
                     .buildBlocking();
-            jda.addEventListener(new MessageListener(jda));
-            jda.addEventListener(new VoiceChannelListener());
+            MessageListener messageListener = new MessageListener(jda);
+            jda.addEventListener(messageListener);
+            jda.addEventListener(new VoiceChannelListener(messageListener.getMessageCommands()));
             jda.addEventListener(new ChannelMovedListener());
         } catch (LoginException e){
             e.printStackTrace();

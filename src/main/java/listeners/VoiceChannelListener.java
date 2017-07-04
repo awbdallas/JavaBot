@@ -1,5 +1,7 @@
 package listeners;
 
+import commands.MessageCommands;
+import commands.Watch;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.PrivateChannel;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
@@ -7,14 +9,17 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import utils.Utils;
 
 import java.io.*;
+import java.util.List;
 
 public class VoiceChannelListener extends ListenerAdapter{
+    private MessageCommands messageCommands;
 
-    public VoiceChannelListener() { }
+    public VoiceChannelListener(MessageCommands messageCommands) {
+        this.messageCommands = messageCommands;
+    }
 
     /**
-     * Triggers on guild voice join. At the moment it just watches and checks
-     * the watch file to figure out if it needs to ping anyone.
+     * Triggers on guild voice join. Checks to see if anyone needs to be alerted
      * @param event
      */
     @Override
@@ -23,35 +28,27 @@ public class VoiceChannelListener extends ListenerAdapter{
                 event.getGuild().getName(), event.getChannelJoined().getName(),
                 event.getMember().getEffectiveName());
         if (Utils.getAmountOfPeopleInVoice(event) == 1){
-            lookupWatchFileForWatchers(event.getJDA());
-        }
-    }
-
-    public void lookupWatchFileForWatchers(JDA jda){
-        BufferedReader in = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("/watch_list.txt")));
-        try{
-            String inputLine = "default";
-            while ((inputLine = in.readLine()) != null){
-                PrivateChannel holding = jda.getUserById(inputLine).openPrivateChannel().complete();
-                holding.sendMessage("Someone has joined the voice server. Your name is now removed from watch").queue();
-                holding.close().queue();
+            for (long user: getWatchObject().getUsersWatchingallList()){
+                messageUserAboutAlert(event.getJDA(), user);
             }
-            wipeWatchFile();
-            in.close();
-        }catch (IOException e){
-            e.printStackTrace();
-            System.out.println("Error reading file");
-            return;
+        }
+        for (long user: getWatchObject().getListOfUsersToMessage(event.getMember().getUser().getIdLong())){
+            messageUserAboutAlert(event.getJDA(), user);
         }
     }
 
-    public void wipeWatchFile(){
-        try{
-            PrintWriter printWriter = new PrintWriter(this.getClass().getResource("/watch_list.txt").getPath());
-            printWriter.close();
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-            System.out.println("Watch file not found");
+    public void messageUserAboutAlert(JDA jda, Long id){
+        PrivateChannel holding = jda.getUserById(id).openPrivateChannel().complete();
+        holding.sendMessage("User you were watching has joined the server").queue();
+        holding.close().queue();
+    }
+
+    public Watch getWatchObject() {
+        for (Object object : messageCommands.getCommandObjects()){
+            if (object instanceof Watch){
+                return (Watch) object;
+            }
         }
+        return null;
     }
 }
