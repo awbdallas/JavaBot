@@ -1,4 +1,5 @@
 package commands;
+import commands.ping.Ping;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
@@ -7,6 +8,6 @@ public class PingTest {
 
     @Test
     public void testPong() {
-        assertEquals("Pong", commands.Ping.run());
+        assertEquals("Pong", Ping.run());
     }
 }

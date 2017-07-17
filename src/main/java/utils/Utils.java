@@ -1,6 +1,6 @@
 package utils;
 
-import commands.ParsedCommandMessage;
+import commands.structure.ParsedCommandMessage;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;

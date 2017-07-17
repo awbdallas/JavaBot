@@ -1,5 +1,7 @@
-package commands;
+package commands.xkcd;
 
+import commands.structure.Command;
+import commands.structure.ParsedCommandMessage;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import org.jsoup.Jsoup;
@@ -65,7 +67,7 @@ public class Xkcd implements Command {
     /**
      * Get comic which includes opening the request
      * @param random so we know if it's a random request or not
-     * @return will return an commands.XKCDImage which is more or less acting like a
+     * @return will return an commands.xkcd.XKCDImage which is more or less acting like a
      * struct containing all the info
      */
     private static XKCDImage getComic(Boolean random){

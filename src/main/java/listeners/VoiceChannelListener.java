@@ -1,15 +1,12 @@
 package listeners;
 
-import commands.MessageCommands;
-import commands.Watch;
+import commands.structure.MessageCommands;
+import commands.watch.Watch;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.PrivateChannel;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import utils.Utils;
-
-import java.io.*;
-import java.util.List;
 
 public class VoiceChannelListener extends ListenerAdapter{
     private MessageCommands messageCommands;

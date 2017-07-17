@@ -1,4 +1,4 @@
-package commands;
+package commands.structure;
 
 public interface Command {
     void run(ParsedCommandMessage parsedCommandMessage);

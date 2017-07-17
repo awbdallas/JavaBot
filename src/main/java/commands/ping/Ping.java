@@ -1,4 +1,7 @@
-package commands;
+package commands.ping;
+
+import commands.structure.Command;
+import commands.structure.ParsedCommandMessage;
 
 import java.util.HashMap;
 import java.util.List;

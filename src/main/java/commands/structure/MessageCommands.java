@@ -1,4 +1,4 @@
-package commands;
+package commands.structure;
 
 import org.reflections.Reflections;
 

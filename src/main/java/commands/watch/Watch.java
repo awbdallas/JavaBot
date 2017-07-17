@@ -1,10 +1,9 @@
-package commands;
+package commands.watch;
 
+import commands.structure.Command;
+import commands.structure.ParsedCommandMessage;
 import net.dv8tion.jda.core.entities.User;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

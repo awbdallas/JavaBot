@@ -1,8 +1,8 @@
 package listeners;
 
-import commands.MessageCommandParser;
-import commands.MessageCommands;
-import commands.ParsedCommandMessage;
+import commands.structure.MessageCommandParser;
+import commands.structure.MessageCommands;
+import commands.structure.ParsedCommandMessage;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.*;
